@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(schedule)",
+      "Skill(schedule:*)",
+      "Bash(gh --version)"
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+https://www.youtube.com/watch?v=R7O2TaM709Y
+
+1.
+Crée un fichier .md qui est basé sur l'entreprise UniversSoleil et qui doit permettre de prendre tout le contexte actuel de l'entreprise. Fais un document vraiment très détaillé, pense aussi à mettre beaucoup de chiffres
+2.
+Maintenant, fais la même chose mais en te focalisant sur le site web, les réseaux sociaux d'universsoleil, pour créer un fichier .md qui reprend tout le style, la tonalité et les informations sur la manière dont s'exprime l'entreprise UniversSoleil.  https://www.facebook.com/profile.php?id=61576003705992 www.universsoleil.fr
+3.
+Crée un fichier .md qui présente tous les produits d'UniversSoleil, la manière de vendre, la stratégie, le marketing en place…
+4.
+Crée un fichier .md qui présente la stratégie de croissance marketing d'UniversSoleil
+5.
+Initie un fichier claude.md
+6.
+Crée un fichier .md pour décrire un cadre structuré, un Framework opérationnel, pour mener une recherche marketing efficace au sein d'une entreprise.
