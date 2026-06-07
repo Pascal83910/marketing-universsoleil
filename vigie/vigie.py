@@ -22,7 +22,9 @@ SYSTEM_PROMPT = """Tu es Vigie, l'agent de veille des appels d'offre pour Univer
 
 Univers Soleil est un installateur certifié d'énergies renouvelables basé à Pourrières (83910, PACA), fondé en 2007, avec plus de 600 installations. Domaines d'expertise : pompes à chaleur (M-TEC), chaudières biomasse/granulés (ÖkoFEN), solaire thermique, batteries solaires (Tesla Powerwall 3), onduleurs (Fronius), systèmes solaires hybrides.
 
-Ton rôle est de repérer les opportunités de marchés publics (appels d'offre, consultations, MAPA) publiés dans les 7 derniers jours et correspondant exactement aux compétences d'Univers Soleil."""
+Ton rôle est de repérer les opportunités de marchés publics (appels d'offre, consultations, MAPA) publiés dans les 7 derniers jours et correspondant exactement aux compétences d'Univers Soleil.
+
+IMPORTANT : Les Contrats de Performance Énergétique (CPE) et Marchés Globaux de Performance (MGP) sont très pertinents car ils incluent systématiquement l'installation d'équipements ENR (PAC, biomasse, solaire thermique). Ne pas les ignorer même si le titre ne mentionne pas explicitement le type d'équipement."""
 
 
 def build_prompt(today: str) -> str:
@@ -33,23 +35,42 @@ Effectue une veille complète des appels d'offre publics publiés cette semaine 
 - marches-publics.gouv.fr
 - achatpublic.com
 - klekoon.com
-- Google (requêtes ciblées : "appel d'offre solaire thermique 2026", "marché public pompe à chaleur PACA", etc.)
+- francemarches.com
+- Google (requêtes ciblées listées ci-dessous)
 
 ## Critères de sélection
 
 **ZONE 1 — Rayon 150 km de Pourrières (dép. 83, 13, 84, 04, 06, 05, 34, 30, 07)**
 - Entretien et maintenance de solaire thermique (panneaux, ballons, circuits)
 - Entretien et maintenance de chaudières biomasse / granulés / bois énergie
+- Contrat de Performance Énergétique (CPE) ou Marché Global de Performance (MGP) incluant PAC, biomasse ou solaire thermique
 
 **ZONE 2 — Dép. 13 (Bouches-du-Rhône), 82 (Tarn-et-Garonne) et Corse (2A, 2B)**
 - Installation de solaire thermique
 - Installation de batteries solaires / systèmes de stockage d'énergie
 - Installation de pompes à chaleur (air/eau, eau/eau, géothermique)
 - Installation de chaudières biomasse / granulés / bois énergie
+- CPE / MGP / rénovation énergétique globale incluant équipements ENR
 
 **ZONE 3 — France entière**
 - Projets solaire hybride (PV + thermique, ou PV + stockage)
 - Fourniture et installation de batteries solaires / systèmes de stockage d'énergie renouvelable
+- CPE / MGP de grande envergure avec composante ENR significative (PAC, biomasse, solaire thermique)
+- Marchés de transition énergétique incluant remplacement de chauffage par ENR
+
+## Requêtes Google à effectuer
+1. site:boamp.fr "solaire thermique" OR "chaudière biomasse" OR "pompe à chaleur" 2026
+2. site:boamp.fr "contrat de performance énergétique" OR "CPE" OR "marché global de performance" 2026
+3. "appel d'offre" "pompe à chaleur" OR "biomasse" OR "solaire thermique" PACA OR "Bouches-du-Rhône" OR "Var" 2026
+4. "marché public" "CPE" OR "performance énergétique" "pompe à chaleur" OR "biomasse" OR "solaire" 2026
+5. "appel d'offre" "solaire hybride" OR "batterie solaire" OR "stockage énergie" France 2026
+6. site:achatpublic.com "énergie renouvelable" OR "ENR" OR "biomasse" OR "solaire thermique" 2026
+7. site:klekoon.com "pompe à chaleur" OR "chaudière biomasse" OR "solaire thermique" PACA 2026
+
+## Points d'attention spécifiques
+- Les CPE (Contrats de Performance Énergétique) portent souvent des titres génériques comme "rénovation énergétique", "efficacité énergétique" ou "transition énergétique" — vérifier le contenu pour détecter la présence d'équipements ENR
+- Les codes CPV pertinents : 09331000 (panneaux solaires), 42511110 (pompes à chaleur), 09111400 (combustibles à base de bois), 45331000 (installation chauffage), 45261215 (travaux de couverture solaire)
+- Rechercher aussi : "rénovation thermique", "décarbonation", "sortie des énergies fossiles"
 
 ## Format de réponse attendu
 
@@ -102,13 +123,11 @@ def run_vigie_search() -> str:
             messages=messages,
         )
 
-        # Log search queries
         for block in response.content:
             if hasattr(block, "type") and block.type == "tool_use":
                 query = block.input.get("query", "") if hasattr(block, "input") else ""
                 print(f"  → Recherche : {query[:100]}")
 
-        # Add assistant response to history
         messages.append({"role": "assistant", "content": response.content})
 
         if response.stop_reason == "end_turn":
@@ -119,28 +138,23 @@ def run_vigie_search() -> str:
             print(f"[Vigie] Recherche terminée ({iterations} itération(s)).")
             return text
 
-        # Continue the loop — provide tool results for web_search if needed
         tool_use_ids = [
             block.id for block in response.content
             if hasattr(block, "type") and block.type == "tool_use"
         ]
         if tool_use_ids:
-            # Check if tool_result blocks already present in the response (server-side execution)
             existing_results = {
                 block.tool_use_id for block in response.content
                 if hasattr(block, "type") and block.type == "tool_result"
             }
             missing = [uid for uid in tool_use_ids if uid not in existing_results]
             if missing:
-                # Server did not embed results — this shouldn't happen with web_search_20250305
-                # but add empty acknowledgement to avoid API errors
                 messages.append({"role": "user", "content": [
                     {"type": "tool_result", "tool_use_id": uid, "content": ""}
                     for uid in missing
                 ]})
 
     print("[Vigie] AVERTISSEMENT : nombre maximum d'itérations atteint.", file=sys.stderr)
-    # Return whatever text was accumulated
     last_text = ""
     for msg in reversed(messages):
         if msg["role"] == "assistant":
@@ -154,13 +168,11 @@ def run_vigie_search() -> str:
 
 
 def _md_to_html(text: str) -> str:
-    """Minimal Markdown → HTML conversion for email body."""
     lines = text.split("\n")
     html_parts = []
     in_list = False
 
     for line in lines:
-        # Horizontal rule
         if line.strip() == "---":
             if in_list:
                 html_parts.append("</ul>")
@@ -168,7 +180,6 @@ def _md_to_html(text: str) -> str:
             html_parts.append('<hr style="border:none;border-top:1px solid #e0e0e0;margin:16px 0;">')
             continue
 
-        # H2
         if line.startswith("## "):
             if in_list:
                 html_parts.append("</ul>")
@@ -177,7 +188,6 @@ def _md_to_html(text: str) -> str:
             html_parts.append(f'<h3 style="color:#2c6e49;border-bottom:1px solid #c8e6c9;padding-bottom:6px;margin-top:24px;">{content}</h3>')
             continue
 
-        # Bold-only line treated as sub-heading (AO title)
         if re.match(r"^\*\*[^*]+\*\*$", line.strip()):
             if in_list:
                 html_parts.append("</ul>")
@@ -186,7 +196,6 @@ def _md_to_html(text: str) -> str:
             html_parts.append(f'<h4 style="color:#1b4332;margin:20px 0 6px;">{content}</h4>')
             continue
 
-        # List item
         if line.startswith("- "):
             if not in_list:
                 html_parts.append('<ul style="margin:4px 0 4px 20px;padding:0;">')
@@ -195,17 +204,14 @@ def _md_to_html(text: str) -> str:
             html_parts.append(f'<li style="margin:3px 0;">{content}</li>')
             continue
 
-        # End of list
         if in_list:
             html_parts.append("</ul>")
             in_list = False
 
-        # Empty line
         if not line.strip():
             html_parts.append('<div style="height:8px;"></div>')
             continue
 
-        # Regular paragraph
         content = _inline_md(line)
         html_parts.append(f'<p style="margin:4px 0;">{content}</p>')
 
@@ -216,7 +222,6 @@ def _md_to_html(text: str) -> str:
 
 
 def _inline_md(text: str) -> str:
-    """Convert inline **bold** markdown to HTML."""
     return re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
 
 
@@ -247,7 +252,7 @@ def build_html_email(report: str, week_start: str) -> str:
 
 def send_email(html_body: str, plain_body: str, week_start: str) -> None:
     smtp_host = os.environ["SMTP_HOST"]
-    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+    smtp_port = int(os.environ.get("SMTP_PORT") or "587")
     smtp_user = os.environ["SMTP_USER"]
     smtp_pass = os.environ["SMTP_PASS"]
 
