@@ -24,7 +24,7 @@ Univers Soleil est un installateur certifié d'énergies renouvelables basé à 
 
 Ton rôle est de repérer les opportunités de marchés publics (appels d'offre, consultations, MAPA) publiés dans les 7 derniers jours et correspondant exactement aux compétences d'Univers Soleil.
 
-IMPORTANT : Les Contrats de Performance Énergétique (CPE) et Marchés Globaux de Performance (MGP) sont très pertinents car ils incluent systématiquement l'installation d'équipements ENR (PAC, biomasse, solaire thermique). Ne pas les ignorer même si le titre ne mentionne pas explicitement le type d'équipement."""
+IMPORTANT : Les Contrats de Performance Énergétique (CPE) et Marchés Globaux de Performance (MGP) sont très pertinents même sans mention explicite d'équipements ENR dans le titre. Un CPE portant sur "exploitation des installations de chauffage" ou "eau chaude sanitaire" ou "bâtiments communaux" implique systématiquement des travaux sur les équipements de chauffage — domaine clé d'Univers Soleil."""
 
 
 def build_prompt(today: str) -> str:
@@ -36,6 +36,7 @@ Effectue une veille complète des appels d'offre publics publiés cette semaine 
 - achatpublic.com
 - klekoon.com
 - francemarches.com
+- marchesonline.com
 - Google (requêtes ciblées listées ci-dessous)
 
 ## Critères de sélection
@@ -43,7 +44,9 @@ Effectue une veille complète des appels d'offre publics publiés cette semaine 
 **ZONE 1 — Rayon 150 km de Pourrières (dép. 83, 13, 84, 04, 06, 05, 34, 30, 07)**
 - Entretien et maintenance de solaire thermique (panneaux, ballons, circuits)
 - Entretien et maintenance de chaudières biomasse / granulés / bois énergie
-- Contrat de Performance Énergétique (CPE) ou Marché Global de Performance (MGP) incluant PAC, biomasse ou solaire thermique
+- Contrat de Performance Énergétique (CPE) ou Marché Global de Performance (MGP) — même sans mention d'équipements spécifiques
+- Exploitation des installations de chauffage / eau chaude sanitaire dans le cadre d'un programme d'amélioration énergétique
+- Rénovation énergétique de bâtiments communaux / collectifs
 
 **ZONE 2 — Dép. 13 (Bouches-du-Rhône), 82 (Tarn-et-Garonne) et Corse (2A, 2B)**
 - Installation de solaire thermique
@@ -66,11 +69,20 @@ Effectue une veille complète des appels d'offre publics publiés cette semaine 
 5. "appel d'offre" "solaire hybride" OR "batterie solaire" OR "stockage énergie" France 2026
 6. site:achatpublic.com "énergie renouvelable" OR "ENR" OR "biomasse" OR "solaire thermique" 2026
 7. site:klekoon.com "pompe à chaleur" OR "chaudière biomasse" OR "solaire thermique" PACA 2026
+8. site:marchesonline.com "contrat de performance énergétique" (83 OR 13 OR 84 OR 04 OR 06 OR 05 OR 34 OR 30 OR 07) 2026
+9. site:marchesonline.com "rénovation énergétique" OR "exploitation chauffage" OR "eau chaude sanitaire" PACA OR Var OR "Bouches-du-Rhône" 2026
+10. site:francemarches.com "contrat de performance énergétique" (83 OR 13 OR 84 OR 04 OR 06 OR 34 OR 30) 2026
 
 ## Points d'attention spécifiques
-- Les CPE (Contrats de Performance Énergétique) portent souvent des titres génériques comme "rénovation énergétique", "efficacité énergétique" ou "transition énergétique" — vérifier le contenu pour détecter la présence d'équipements ENR
-- Les codes CPV pertinents : 09331000 (panneaux solaires), 42511110 (pompes à chaleur), 09111400 (combustibles à base de bois), 45331000 (installation chauffage), 45261215 (travaux de couverture solaire)
-- Rechercher aussi : "rénovation thermique", "décarbonation", "sortie des énergies fossiles"
+- Les CPE portent souvent des titres génériques : "contrat de performance énergétique", "exploitation des installations de chauffage", "gestion de l'énergie" — sans nommer PAC, biomasse ou solaire. Sélectionner dès que la localisation est dans la zone et que les travaux portent sur le chauffage ou l'ECS.
+- Les codes CPV pertinents (à utiliser comme critère de recherche) :
+  * 71314000 / 71314200 : Énergie et services connexes / Services de gestion de l'énergie → CPE
+  * 09331000 : Panneaux solaires
+  * 42511110 : Pompes à chaleur
+  * 09111400 : Combustibles à base de bois (biomasse)
+  * 45331000 : Installation chauffage
+  * 45261215 : Travaux de couverture solaire
+- Rechercher aussi : "rénovation thermique", "décarbonation", "sortie des énergies fossiles", "bâtiments communaux chauffage", "amélioration performance énergétique bâtiments"
 
 ## Format de réponse attendu
 
